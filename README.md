@@ -2,7 +2,8 @@
 
 <!-- Time-stamp: "2026-11-25T13:00:00Z" -->
 
-単漢字変換 Input Method「Naggy」の Windows IME 版です。
+単漢字変換 Input Method「Naggy」の Windows IME 版です。Naggy は、冨樫雅文さ
+んの単漢字変換 IME『風』のやり方を受け継いでいます。
 
 [quail-naggy](https://github.com/JRF-2018/quail-naggy) (Emacs 用) の動きを
 そのまま Windows の IME (Text Services Framework) にしたものと、
