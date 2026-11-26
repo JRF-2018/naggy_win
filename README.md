@@ -266,14 +266,19 @@ Perl 版との違い:
 
 [BUILD.md](BUILD.md) を参照してください。
 
+## 作者 (文責)
+
+JRF ( http://jrf.cocolog-nifty.com/statuses , Twitter (X): @jion_rockford )
+
+元になった quail-naggy・naggy-backend.pl と、Naggy の入力方式の考案は JRF
+のもの(AI 以前のもの)です。naggy-backend の Go への移植、
+Windows IME (TSF) とインストーラの設計・プログラムは Claude Opus 5.5
+(Anthropic) によるもので、JRF はテストと仕様の指示を行いました。
+
 ## ライセンス
 
 MIT License ([LICENSE](LICENSE))。ダウンロードされる辞書はそれぞれのライセ
 ンスに従います。
-
-## 作者
-
-JRF (http://jrf.cocolog-nifty.com/software/)
 
 ----
 (This document is mainly written in Japanese/UTF8.)
