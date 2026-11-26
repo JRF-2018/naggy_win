@@ -9,9 +9,9 @@
 そのまま Windows の IME (Text Services Framework) にしたものと、
 Perl なしで動く naggy-backend の Go 版からなります。
 
-**状態: バージョン 0.3.7 (テスト中)。** naggy-backend (Go 版) は Perl 版と
-の出力比較テストを通っていますが、IME 部分はまだ実機での確認が十分ではありま
-せん。
+**状態: バージョン 0.3.7。** naggy-backend (Go 版) は Perl 版との出力比較
+テストを通っています。IME 部分は作者の環境 (Windows 11) で確認しています。不
+具合があれば Issues で教えてください。
 
 ## 画面
 
