@@ -270,10 +270,11 @@ Perl 版との違い:
 
 JRF ( http://jrf.cocolog-nifty.com/statuses , Twitter (X): @jion_rockford )
 
-元になった quail-naggy・naggy-backend.pl と、Naggy の入力方式の考案は JRF
-のもの(AI 以前のもの)です。naggy-backend の Go への移植、
-Windows IME (TSF) とインストーラの設計・プログラムは Claude Opus 5.5
-(Anthropic) によるもので、JRF はテストと仕様の指示を行いました。
+Naggy の単漢字変換のやり方は、冨樫雅文さんの単漢字変換 IME『風』を受け継い
+だものです。それを Emacs 上に実装した quail-naggy・naggy-backend.pl は JRF
+のもの(AI 以前のもの)です。naggy-backend の Go への移植、Windows IME (TSF)
+とインストーラの設計・プログラムは Claude Opus 5.5 (Anthropic) によるもので、
+JRF はテストと仕様の指示を行いました。
 
 ## ライセンス
 
