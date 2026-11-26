@@ -1,0 +1,32 @@
+#include <winver.h>
+
+1 ICON "naggy.ico"
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 0,3,7,0
+ PRODUCTVERSION 0,3,7,0
+ FILEFLAGSMASK 0x3fL
+ FILEFLAGS 0x0L
+ FILEOS VOS_NT_WINDOWS32
+ FILETYPE VFT_DLL
+ FILESUBTYPE VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "041104b0"
+        BEGIN
+            VALUE "CompanyName", "JRF"
+            VALUE "FileDescription", "naggy_win Text Input Processor"
+            VALUE "FileVersion", "0.3.7"
+            VALUE "InternalName", "naggy_ime"
+            VALUE "LegalCopyright", "MIT License"
+            VALUE "OriginalFilename", "naggy_ime.dll"
+            VALUE "ProductName", "naggy_win"
+            VALUE "ProductVersion", "0.3.7"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x411, 1200
+    END
+END

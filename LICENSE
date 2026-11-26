@@ -1,0 +1,35 @@
+MIT License
+
+Copyright (c) 2026 JRF (http://jrf.cocolog-nifty.com/software/)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+----
+
+The files in data/ (trl/, nginit/, bushu-skk-dic.txt) come from
+quail-naggy (https://github.com/JRF-2018/quail-naggy) by the same author.
+They keep their original notices (public domain intended / BSD / Artistic
+License) and are also distributed here under the MIT License above.
+
+Dictionaries downloaded by the installer are not part of this software and
+have their own licenses:
+  * tankanji-2026.txt (jrf_tankanji-2026): see its README.
+  * SKK-JISYO.L, SKK-JISYO.china_taiwan (SKK dictionaries): GPL v2 or later.
+  * emoji-skk-dic.txt (naggy-emoji-skk-dic): MIT License.
+  * The dictionary of the IME "Kaze" is used only from the user's own copy.

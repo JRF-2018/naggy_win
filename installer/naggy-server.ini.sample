@@ -1,0 +1,27 @@
+# naggy-server.ini - settings of naggy-server (copy to naggy-server.ini).
+#
+# naggy-server reads, in this order:
+#   <install dir>\naggy-server.ini
+#   %APPDATA%\naggy_win\naggy-server.ini
+#
+# backend: "builtin" (default) uses the built-in Go backend.  Any other
+# value is a command line of an external backend that speaks the
+# naggy-backend protocol on stdin/stdout, e.g. the Perl version:
+#
+# backend = "C:\Strawberry\perl\bin\perl.exe" "C:\home\me\elisp\quail-naggy\naggy-backend.pl"
+#
+# (The Perl version reads its own site-init.nginit next to naggy-backend.pl.
+#  With an old default-init.nginit, use "define = FRONT_END=quail-naggy" to
+#  get the same behavior as quail-naggy.el.)
+backend = builtin
+
+# define: variables for the init files (like -D of naggy-backend).
+# FRONT_END=naggy_win is always defined first.
+#define = JAPANESE_PUNCT_PERIOD=1
+#define = DEFAULT_CONVERT=skk
+
+# include: additional resource directories searched first (like -I).
+#include = C:\Users\me\naggy
+
+# init-file: use this init file instead of site-init.nginit.
+#init-file = C:\Users\me\naggy\my-init.nginit
