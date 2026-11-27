@@ -34,7 +34,7 @@ Perl なしで動く naggy-backend の Go 版からなります。
 て Space を押したのと同じになり、`akka` が単語変換として扱われます。「あっか」
 と読む単語の候補が並び、「ばける」(化ける) の字を含む「悪化」が強調されます。
 大文字で始めた `Akka:bakeru` + Space でも同じですが、Shift+Space のほうが
-Shift を押しっぱなしにせずにすむので、指への負担が少なくおすすめです。
+指への負担が少なくおすすめです。
 
 ![akka:bakeru と入力したところ](docs/images/input-word.png)
 
