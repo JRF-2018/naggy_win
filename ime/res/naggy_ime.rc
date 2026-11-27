@@ -3,8 +3,8 @@
 1 ICON "naggy.ico"
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,7,0
- PRODUCTVERSION 0,3,7,0
+ FILEVERSION 0,3,8,0
+ PRODUCTVERSION 0,3,8,0
  FILEFLAGSMASK 0x3fL
  FILEFLAGS 0x0L
  FILEOS VOS_NT_WINDOWS32
@@ -17,12 +17,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "JRF"
             VALUE "FileDescription", "naggy_win Text Input Processor"
-            VALUE "FileVersion", "0.3.7"
+            VALUE "FileVersion", "0.3.8"
             VALUE "InternalName", "naggy_ime"
             VALUE "LegalCopyright", "MIT License"
             VALUE "OriginalFilename", "naggy_ime.dll"
             VALUE "ProductName", "naggy_win"
-            VALUE "ProductVersion", "0.3.7"
+            VALUE "ProductVersion", "0.3.8"
         END
     END
     BLOCK "VarFileInfo"

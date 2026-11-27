@@ -5,6 +5,9 @@
 #include "Engine.h"
 #include "Globals.h"
 
+#include <d2d1.h>
+#include <dwrite.h>
+
 namespace naggy_win {
 
 class CandidateWindow {
@@ -31,11 +34,27 @@ private:
     static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
     void Layout(HDC dc);
     void Paint(HDC dc);
+    // Text drawing: Direct2D/DirectWrite (color fonts such as emoji) with
+    // a GDI fallback.
+    bool BeginText(HDC dc);
+    void EndText();
+    void DrawLabel(HDC dc, const std::wstring& t, const RECT& r, COLORREF color, bool isSmall,
+                  bool center);
+    void ReleaseD2D();
     int HitTest(int x, int y) const;
     bool Create();
 
     HWND hwnd_ = nullptr;
     HFONT font_ = nullptr, smallFont_ = nullptr;
+    std::wstring faceName_;
+    float fontPx_ = 0, smallFontPx_ = 0;
+    ID2D1Factory* d2d_ = nullptr;
+    ID2D1DCRenderTarget* rt_ = nullptr;
+    IDWriteFactory* dwrite_ = nullptr;
+    IDWriteTextFormat* fmt_ = nullptr;
+    IDWriteTextFormat* smallFmt_ = nullptr;
+    bool d2dFailed_ = false;
+    bool drawing_ = false;
     bool fontValid_ = false;
     int dpi_ = 96;
     naggy::CandidateView view_;

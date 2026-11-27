@@ -44,6 +44,117 @@ void CandidateWindow::Destroy() {
     if (smallFont_) DeleteObject(smallFont_);
     font_ = smallFont_ = nullptr;
     fontValid_ = false;
+    ReleaseD2D();
+}
+
+template <class T> static void ReleaseIf(T*& p) {
+    if (p) {
+        p->Release();
+        p = nullptr;
+    }
+}
+
+void CandidateWindow::ReleaseD2D() {
+    ReleaseIf(fmt_);
+    ReleaseIf(smallFmt_);
+    ReleaseIf(rt_);
+    ReleaseIf(dwrite_);
+    ReleaseIf(d2d_);
+}
+
+bool CandidateWindow::BeginText(HDC dc) {
+    drawing_ = false;
+    if (d2dFailed_) return false;
+    if (!d2d_ && FAILED(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &d2d_))) {
+        d2dFailed_ = true;
+        return false;
+    }
+    if (!dwrite_ && FAILED(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
+                                               reinterpret_cast<IUnknown**>(&dwrite_)))) {
+        d2dFailed_ = true;
+        return false;
+    }
+    if (!rt_) {
+        D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
+            D2D1_RENDER_TARGET_TYPE_DEFAULT,
+            D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE), 96.0f, 96.0f);
+        if (FAILED(d2d_->CreateDCRenderTarget(&props, &rt_))) {
+            d2dFailed_ = true;
+            return false;
+        }
+    }
+    if (!fmt_ || !smallFmt_) {
+        ReleaseIf(fmt_);
+        ReleaseIf(smallFmt_);
+        if (FAILED(dwrite_->CreateTextFormat(faceName_.c_str(), nullptr, DWRITE_FONT_WEIGHT_NORMAL,
+                                             DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL,
+                                             fontPx_, L"ja-jp", &fmt_)) ||
+            FAILED(dwrite_->CreateTextFormat(faceName_.c_str(), nullptr, DWRITE_FONT_WEIGHT_NORMAL,
+                                             DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL,
+                                             smallFontPx_, L"ja-jp", &smallFmt_))) {
+            ReleaseIf(fmt_);
+            ReleaseIf(smallFmt_);
+            d2dFailed_ = true;
+            return false;
+        }
+        for (IDWriteTextFormat* f : {fmt_, smallFmt_}) {
+            f->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
+            f->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+        }
+    }
+    RECT all = {0, 0, width_, height_};
+    if (FAILED(rt_->BindDC(dc, &all))) return false;
+    rt_->BeginDraw();
+    rt_->SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_GRAYSCALE);
+    drawing_ = true;
+    return true;
+}
+
+void CandidateWindow::EndText() {
+    if (!drawing_) return;
+    drawing_ = false;
+    if (rt_->EndDraw() == D2DERR_RECREATE_TARGET) ReleaseIf(rt_);
+}
+
+void CandidateWindow::DrawLabel(HDC dc, const std::wstring& t, const RECT& r, COLORREF color,
+                               bool isSmall, bool center) {
+    if (drawing_) {
+        IDWriteTextFormat* f = isSmall ? smallFmt_ : fmt_;
+        f->SetTextAlignment(center ? DWRITE_TEXT_ALIGNMENT_CENTER : DWRITE_TEXT_ALIGNMENT_LEADING);
+        IDWriteTextLayout* layout = nullptr;
+        float w = static_cast<float>(r.right - r.left), h = static_cast<float>(r.bottom - r.top);
+        if (SUCCEEDED(dwrite_->CreateTextLayout(t.c_str(), static_cast<UINT32>(t.size()), f, w, h,
+                                                &layout))) {
+            if (!center) {
+                DWRITE_TRIMMING trim = {DWRITE_TRIMMING_GRANULARITY_CHARACTER, 0, 0};
+                IDWriteInlineObject* ellipsis = nullptr;
+                if (SUCCEEDED(dwrite_->CreateEllipsisTrimmingSign(f, &ellipsis))) {
+                    layout->SetTrimming(&trim, ellipsis);
+                    ellipsis->Release();
+                }
+            }
+            ID2D1SolidColorBrush* brush = nullptr;
+            D2D1_COLOR_F c = D2D1::ColorF(GetRValue(color) / 255.0f, GetGValue(color) / 255.0f,
+                                          GetBValue(color) / 255.0f);
+            if (SUCCEEDED(rt_->CreateSolidColorBrush(c, &brush))) {
+                rt_->PushAxisAlignedClip(D2D1::RectF(static_cast<float>(r.left), static_cast<float>(r.top),
+                                                     static_cast<float>(r.right), static_cast<float>(r.bottom)),
+                                         D2D1_ANTIALIAS_MODE_ALIASED);
+                rt_->DrawTextLayout(D2D1::Point2F(static_cast<float>(r.left), static_cast<float>(r.top)),
+                                    layout, brush, D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
+                rt_->PopAxisAlignedClip();
+                brush->Release();
+            }
+            layout->Release();
+            return;
+        }
+    }
+    HGDIOBJ old = SelectObject(dc, isSmall ? smallFont_ : font_);
+    SetTextColor(dc, color);
+    RECT rr = r;
+    DrawTextW(dc, t.c_str(), static_cast<int>(t.size()), &rr,
+              (center ? DT_CENTER : DT_LEFT | DT_END_ELLIPSIS) | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
+    SelectObject(dc, old);
 }
 
 bool CandidateWindow::Create() {
@@ -64,6 +175,12 @@ void CandidateWindow::Layout(HDC dc) {
     std::wstring face = GetSettingString(L"FontName", L"Meiryo UI");
     int pt = static_cast<int>(GetSettingDword(L"FontSize", 14));
     if (pt < 6 || pt > 72) pt = 14;
+    faceName_ = face;
+    fontPx_ = static_cast<float>(MulDiv(pt, dpi, 72));
+    smallFontPx_ = static_cast<float>(MulDiv(pt * 7 / 10 + 1, dpi, 72));
+    ReleaseIf(fmt_);
+    ReleaseIf(smallFmt_);
+    d2dFailed_ = false;
     font_ = CreateFontW(-MulDiv(pt, dpi, 72), 0, 0, 0, FW_NORMAL, 0, 0, 0, DEFAULT_CHARSET, 0, 0,
                         CLEARTYPE_QUALITY, 0, face.c_str());
     smallFont_ = CreateFontW(-MulDiv(pt * 7 / 10 + 1, dpi, 72), 0, 0, 0, FW_NORMAL, 0, 0, 0,
@@ -127,40 +244,38 @@ void CandidateWindow::Paint(HDC dc) {
             FillRect(dc, &hm, hb);
             DeleteObject(hb);
         }
-        // candidate
-        SelectObject(dc, font_);
-        if (c.index >= 0) {
-            std::wstring t = naggy::TruncateToWidth(c.text, 4, L' ');
-            while (!t.empty() && t.back() == L' ') t.pop_back();
-            SetTextColor(dc, c.cursor ? kCursorText : kText);
-            RECT tr = {r.left + 1, r.top, r.right - 1, r.bottom};
-            DrawTextW(dc, t.c_str(), static_cast<int>(t.size()), &tr,
-                      DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
-        } else {
-            SetTextColor(dc, c.cursor ? kCursorText : kEmpty);
-            RECT tr = {r.left + 1, r.top, r.right - 1, r.bottom};
-            DrawTextW(dc, L"\x00B7", 1, &tr, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-        }
     }
-    // status line
+    // status line background
     RECT sr = {pad_, pad_ * 2 + cellH_ * 4, width_ - pad_, height_ - pad_};
     HBRUSH sb = CreateSolidBrush(kStatusBg);
     FillRect(dc, &sr, sb);
     DeleteObject(sb);
+
+    // text
+    BeginText(dc);
+    for (int i = 0; i < 40; ++i) {
+        const auto& c = view_.cells[i];
+        RECT r = CellRect(i, pad_, cellW_, cellH_, gap_);
+        RECT tr = {r.left + 1, r.top, r.right - 1, r.bottom};
+        if (c.index >= 0) {
+            std::wstring t = naggy::TruncateToWidth(c.text, 4, L' ');
+            while (!t.empty() && t.back() == L' ') t.pop_back();
+            DrawLabel(dc, t, tr, c.cursor ? kCursorText : kText, false, true);
+        } else {
+            DrawLabel(dc, L"\x00B7", tr, c.cursor ? kCursorText : kEmpty, false, true);
+        }
+    }
     wchar_t page[32];
     StringCchPrintfW(page, ARRAYSIZE(page), L"%d/%d", view_.plane + 1, view_.planes);
-    SelectObject(dc, smallFont_);
-    SetTextColor(dc, kLabel);
     RECT pr = sr;
     pr.left += pad_;
-    DrawTextW(dc, page, -1, &pr, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
-    SelectObject(dc, font_);
-    SetTextColor(dc, kText);
+    DrawLabel(dc, page, pr, kLabel, true, false);
     RECT tr = sr;
     tr.left += pad_ + cellW_;
     tr.right -= pad_;
-    DrawTextW(dc, view_.status.c_str(), static_cast<int>(view_.status.size()), &tr,
-              DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX | DT_END_ELLIPSIS);
+    DrawLabel(dc, view_.status, tr, kText, false, false);
+    EndText();
+
     // border
     HPEN bp = CreatePen(PS_SOLID, 1, kBorder);
     SelectObject(dc, bp);
@@ -179,7 +294,8 @@ void CandidateWindow::Show(const naggy::CandidateView& v, const RECT& rc) {
     Layout(dc);
     ReleaseDC(hwnd_, dc);
 
-    POINT pt = {rc.left, rc.bottom + MulDiv(2, dpi_, 96)};
+    // Centered horizontally under the composition (the cursor).
+    POINT pt = {(rc.left + rc.right) / 2 - width_ / 2, rc.bottom + MulDiv(2, dpi_, 96)};
     HMONITOR mon = MonitorFromRect(&rc, MONITOR_DEFAULTTONEAREST);
     MONITORINFO mi = {sizeof(mi)};
     GetMonitorInfoW(mon, &mi);

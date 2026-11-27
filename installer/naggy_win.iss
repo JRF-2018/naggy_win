@@ -3,7 +3,7 @@
 ; installer\stage\; see BUILD.md)
 
 #define AppName "naggy_win"
-#define AppVersion "0.3.7"
+#define AppVersion "0.3.8"
 #define AppPublisher "JRF"
 #define AppURL "https://github.com/JRF-2018/naggy_win"
 #define Stage "stage"

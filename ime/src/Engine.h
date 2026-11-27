@@ -101,7 +101,7 @@ private:
     void StartConvert(const std::wstring& s);
     void TerminateTranslit(const std::wstring& spec, const std::wstring& s);
     void TabTerminate(const KeyEvent& k, const std::wstring& s);
-    wchar_t MapChar(wchar_t c) const;
+    std::wstring ForConvert(const std::wstring& s) const;
     void FinishCommit(std::wstring s);
     void CancelConvert();
     void Display();

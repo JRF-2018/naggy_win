@@ -18,6 +18,12 @@ bool IsCtrlChar(const KeyEvent& k, wchar_t c) {
 }  // namespace
 
 int CharWidth(unsigned long c) {
+    // zero width: combining marks, ZWJ, variation selectors, emoji skin
+    // tone modifiers (so that emoji sequences are kept whole)
+    if ((c >= 0x0300 && c <= 0x036F) || c == 0x200D || (c >= 0xFE00 && c <= 0xFE0F) ||
+        (c >= 0x1F3FB && c <= 0x1F3FF) || (c >= 0xE0100 && c <= 0xE01EF) || c == 0x20E3)
+        return 0;
+    if (c >= 0x1F1E6 && c <= 0x1F1FF) return 1;  // regional indicators (a flag = 2)
     if (c < 0x1100) return 1;
     if ((c >= 0x1100 && c <= 0x115F) || (c >= 0x2E80 && c <= 0xA4CF) ||
         (c >= 0xAC00 && c <= 0xD7A3) || (c >= 0xF900 && c <= 0xFAFF) ||
@@ -25,7 +31,6 @@ int CharWidth(unsigned long c) {
         (c >= 0xFFE0 && c <= 0xFFE6) || (c >= 0x1F300 && c <= 0x1FAFF) ||
         (c >= 0x20000 && c <= 0x3FFFD))
         return 2;
-    if (c >= 0x0300 && c <= 0x036F) return 0;
     return 1;
 }
 
@@ -135,12 +140,18 @@ void Engine::TerminateTranslit(const std::wstring& spec, const std::wstring& s) 
     FinishCommit(out);
 }
 
-wchar_t Engine::MapChar(wchar_t c) const {
-    if (opt_.asciiLayout) {
-        if (c == L'\'') return L':';
-        if (c == L':') return L'\'';
+// ASCII layout (vkegg): the key next to L (`'') works as the separator
+// `:' and vice versa.  The typed text stays as typed (so that Enter
+// commits it as it is); the two are swapped only in what is sent to the
+// converter.
+std::wstring Engine::ForConvert(const std::wstring& s) const {
+    if (!opt_.asciiLayout) return s;
+    std::wstring r = s;
+    for (auto& c : r) {
+        if (c == L'\'') c = L':';
+        else if (c == L':') c = L'\'';
     }
-    return c;
+    return r;
 }
 
 void Engine::TabTerminate(const KeyEvent& k, const std::wstring& s) {
@@ -158,7 +169,7 @@ void Engine::TabTerminate(const KeyEvent& k, const std::wstring& s) {
 bool Engine::ProcessInput(const KeyEvent& k, bool* passThrough) {
     if (state_ == State::Idle) {
         if (k.code == KeyCode::Char) {
-            Insert(MapChar(k.ch));
+            Insert(k.ch);
             return true;
         }
         if (k.code == KeyCode::Space && ShiftOnly(k)) {
@@ -171,7 +182,7 @@ bool Engine::ProcessInput(const KeyEvent& k, bool* passThrough) {
     switch (k.code) {
     case KeyCode::Char:
         if (!k.ctrl && !k.alt) {
-            Insert(MapChar(k.ch));
+            Insert(k.ch);
             return true;
         }
         if (IsCtrlChar(k, L'g')) { Reset(); return true; }
@@ -189,11 +200,11 @@ bool Engine::ProcessInput(const KeyEvent& k, bool* passThrough) {
         break;
     case KeyCode::Space:
         if (NoMods(k)) {
-            StartConvert(buf_);
+            StartConvert(ForConvert(buf_));
             return true;
         }
         if (ShiftOnly(k)) {
-            if (opt_.shiftSpaceAltConvert) StartConvert(buf_ + L":");
+            if (opt_.shiftSpaceAltConvert) StartConvert(ForConvert(buf_) + L":");
             else Insert(L' ');
             return true;
         }
@@ -202,7 +213,7 @@ bool Engine::ProcessInput(const KeyEvent& k, bool* passThrough) {
             return true;
         }
         if (k.alt) {
-            std::wstring s = buf_;
+            std::wstring s = ForConvert(buf_);
             if (!prevModification_.empty()) s += L"#" + prevModification_;
             StartConvert(s);
             return true;

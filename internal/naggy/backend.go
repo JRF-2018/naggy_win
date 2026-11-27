@@ -10,7 +10,7 @@ import (
 )
 
 // Version is reported by the "version" command.
-const Version = "0.18-naggy_win-0.3.7"
+const Version = "0.18-naggy_win-0.3.8"
 
 // CommandFunc implements a backend command.
 type CommandFunc func(b *Backend, args []string)

@@ -9,7 +9,7 @@
 そのまま Windows の IME (Text Services Framework) にしたものと、
 Perl なしで動く naggy-backend の Go 版からなります。
 
-**状態: バージョン 0.3.7。** naggy-backend (Go 版) は Perl 版との出力比較
+**状態: バージョン 0.3.8。** naggy-backend (Go 版) は Perl 版との出力比較
 テストを通っています。IME 部分は作者の環境 (Windows 11) で確認しています。不
 具合があれば Issues で教えてください。
 
@@ -30,10 +30,13 @@ Perl なしで動く naggy-backend の Go 版からなります。
 
 ### 単語変換
 
-大文字で始めた `Akka:bakeru` では、「あっか」と読む単語の候補が並び、「ばけ
-る」(化ける) の字を含む「悪化」が強調されます。
+`akka:bakeru` と入力して **Shift+Space** を押すと、`akka:bakeru:` と入力し
+て Space を押したのと同じになり、`akka` が単語変換として扱われます。「あっか」
+と読む単語の候補が並び、「ばける」(化ける) の字を含む「悪化」が強調されます。
+大文字で始めた `Akka:bakeru` + Space でも同じですが、Shift+Space のほうが
+Shift を押しっぱなしにせずにすむので、指への負担が少なくおすすめです。
 
-![Akka:bakeru と入力したところ](docs/images/input-word.png)
+![akka:bakeru と入力したところ](docs/images/input-word.png)
 
 ![単語変換の候補ウィンドウ](docs/images/candidates-word.png)
 
@@ -57,7 +60,7 @@ Perl なしで動く naggy-backend の Go 版からなります。
 
 ## インストール
 
-`naggy_win-0.3.7-setup.exe` を実行します(管理者権限が必要です)。
+`naggy_win-0.3.8-setup.exe` を実行します(管理者権限が必要です)。
 
 途中で単漢字辞書を選びます。
 
@@ -104,7 +107,7 @@ naggy-dictool.exe setup --force --dest "C:\Program Files\naggy_win" --tankanji j
 |---|---|
 | 半角/全角, Alt+` | IME オン/オフ |
 | Space | 変換 (単漢字変換。`aka:kou` のようなしぼり込みや `Akka:bakeru` のような単語変換も quail-naggy と同じ) |
-| Shift+Space | 末尾に `:` を付けて変換 (`nihon` → `nihon:` = 単語変換) |
+| Shift+Space | 末尾に `:` を付けて変換 (`nihon` → `nihon:` = 単語変換。`akka:bakeru` → `akka:bakeru:` = `akka` を単語変換して「化」でしぼり込み) |
 | Ctrl+Space | 空白を入力 |
 | Alt+Space | 直前に指定した方式 (`#greek` など) で変換 |
 | Enter, F10, Ctrl+M | そのまま (半角英数で) 確定 |
@@ -145,7 +148,9 @@ Shift+0 でも「0」の位置の候補を一時選択できます。
 設定ウィンドウで「ASCII キーボード」を選ぶと、vkegg.el の ASCII 配列用の設
 定と同様に、
 
-* `'` (`;` の右のキー) で `:` を、`:` (Shift+;) で `'` を入力
+* `'` (`;` の右のキー) が `:` の、`:` (Shift+;) が `'` の役をする (入力中の
+  表示と Enter での確定は打ったとおりの文字で、変換するときにだけ入れ替わり
+  ます)
 * Tab でひらがな、Shift+Tab (または Alt+Tab) でカタカナ、Ctrl+Tab で全角英数
 
 になります (無変換・変換・F6〜F10 はそのまま使えます)。
@@ -226,7 +231,7 @@ Perl 版との違い:
   な合成文字 (25 字) や JIS X 0213:2004 の追加字が U+FFFD (�) になります
   が、Go 版では正しく表示され、単漢字辞書の 1 マスとして扱われます。
 * SDBM インデックスが不要。インデックスを作り直す必要もありません。
-* `version` は `0.18-naggy_win-0.3.7` を返します。
+* `version` は `0.18-naggy_win-0.3.8` を返します。
 * `rename-translit`, `read-with-encoding-e` (unsafe) の Perl 版にあるバグ
   は直してあります。
 
@@ -235,9 +240,12 @@ Perl 版との違い:
 
 ## 既知の制限
 
-* Emacs にフォーカスがあるとき、タスクバーの「あ/A」の右クリックメニューが
-  出ないことがあります (一度ほかの IME に切り換えて戻すと出ます)。設定はス
-  タートメニューの「naggy_win の設定」からも開けます。
+* Emacs にフォーカスがあるとき、タスクバーの「あ/A」の表示がオン/オフに追従
+  しません (オン/オフ自体は切り替わっています)。Emacs の中では、タスクバー
+  が naggy_win にアイコンを問い合わせてこないためです。また、「あ/A」の右ク
+  リックメニューが出ないことがあります (一度ほかの IME に切り換えて戻すと出
+  ます)。設定はスタートメニューの「naggy_win の設定」からも開けます。Emacs
+  では quail-naggy を使うのがおすすめです。
 
 * ウイルス対策ソフトがらみで問題が出ることがあります。例えば作者のところで
   は、ESET の「バンキング&ブラウジング保護」で「すべてのブラウザーを保護」

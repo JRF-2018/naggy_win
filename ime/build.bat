@@ -33,7 +33,7 @@ cl /nologo /c /O2 /MT /EHsc /std:c++17 /W3 /utf-8 /DUNICODE /D_UNICODE /DWINVER=
   "%ROOT%src\CandidateWindow.cpp" "%ROOT%src\DisplayAttribute.cpp" "%ROOT%src\LangBarButton.cpp" ^
   "%ROOT%src\PipeBackend.cpp" "%ROOT%src\Engine.cpp" "%ROOT%src\Protocol.cpp" "%ROOT%src\Log.cpp" || (popd & exit /b 1)
 link /nologo /DLL /OUT:naggy_ime.dll /DEF:"%ROOT%src\naggy_ime.def" *.obj naggy_ime.res ^
-  user32.lib gdi32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib shell32.lib || (popd & exit /b 1)
+  user32.lib gdi32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib shell32.lib d2d1.lib dwrite.lib || (popd & exit /b 1)
 rem settings window
 if not exist cfg mkdir cfg
 rc /nologo /fo cfg\naggy_config.res "%ROOT%res\naggy_config.rc" || (popd & exit /b 1)
